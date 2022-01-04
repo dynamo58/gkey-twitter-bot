@@ -16,7 +16,7 @@ def obtain_config(dev_mode: bool) -> Dict[str, Optional[str]]:
     else:
         from os import environ
 
-        for var in ["ID", "TOKEN", "TWITTER_API_KEY", "TWITTER_API_SECRET_KEY", "TWITTER_BEARER_TOKEN", "TWITTER_ACCEESS_TOKEN", "TWITTER_ACCESS_SECRET_TOKEN"]:
+        for var in ["ID", "TOKEN", "TWITTER_API_KEY", "TWITTER_API_SECRET_KEY", "TWITTER_BEARER_TOKEN", "TWITTER_ACCESS_TOKEN", "TWITTER_ACCESS_SECRET_TOKEN"]:
             config[var] = environ[var]
 
     config["STREAMER"] = "Gisthekey"

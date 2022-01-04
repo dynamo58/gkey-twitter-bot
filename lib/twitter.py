@@ -1,7 +1,10 @@
-import tweepy	# type: ignore
-from dotenv import dotenv_values
 
-CONF = dotenv_values(".env")
+from lib.core import obtain_config
+from config import DEVELOPMENT_MODE
+
+import tweepy	# type: ignore
+
+CONF = obtain_config(DEVELOPMENT_MODE)
 
 auth = tweepy.OAuthHandler(CONF["TWITTER_API_KEY"], CONF["TWITTER_API_SECRET_KEY"])
 auth.set_access_token(CONF["TWITTER_ACCESS_TOKEN"], CONF["TWITTER_ACCESS_SECRET_TOKEN"])

@@ -1,12 +1,30 @@
+from config import DEVELOPMENT_MODE
 from lib.twitch import id_from_nick, get_channel_info
 from lib.twitter import tweet
 
-from typing import List, Optional
+
+from typing import List, Optional, Dict
 from enum import Enum
 
-from dotenv import dotenv_values
 
-CONF = dotenv_values(".env")
+def obtain_config(dev_mode: bool) -> Dict[str, Optional[str]]:
+    config: Dict[str, Optional[str]] = {}
+
+    if dev_mode:
+        from dotenv import dotenv_values
+
+        config = dotenv_values(".env")
+    else:
+        from os import environ
+
+        for var in ["ID", "TOKEN", "TWITTER_API_KEY", "TWITTER_API_SECRET_KEY", "TWITTER_BEARER_TOKEN", "TWITTER_ACCEESS_TOKEN", "TWITTER_ACCESS_SECRET_TOKEN"]:
+            config[var] = environ[var]
+    
+    config["STREAMER"] = "Gisthekey"
+    
+    return config
+
+CONF = obtain_config(DEVELOPMENT_MODE)
 
 class Event(Enum):
     went_live     = "{} has just went live playing {} with title \"{}\""

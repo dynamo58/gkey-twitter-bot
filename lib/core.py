@@ -76,13 +76,14 @@ class Streamer():
             pending_events.append(Event.went_live)
             self.is_live = True
 
-        if self.game != info["game_name"]:
-            pending_events.append(Event.changed_game)
-            self.game = info["game_name"]
+        if info != None:
+            if self.game != info["game_name"]:
+                pending_events.append(Event.changed_game)
+                self.game = info["game_name"]
 
-        if self.title != info["title"]:
-            pending_events.append(Event.changed_title)
-            self.title = info["title"]
+            if self.title != info["title"]:
+                pending_events.append(Event.changed_title)
+                self.title = info["title"]
 
         self.handle_event(pending_events, CONF, twitter_client)
 

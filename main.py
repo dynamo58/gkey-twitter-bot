@@ -22,7 +22,7 @@ def main(args: List[str]):
 
     while True:
         sleep(120)
-        streamer.check(twitter_client)
+        streamer.check(CONF, twitter_client)
 
 
 if __name__ == "__main__":

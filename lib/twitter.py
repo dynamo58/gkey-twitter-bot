@@ -1,19 +1,19 @@
+import tweepy  # type: ignore
 
-from lib.core import obtain_config
-from config import DEVELOPMENT_MODE
 
-import tweepy	# type: ignore
+class TwitterAPIClient:
+    def __init__(self, CONF):
+        auth = tweepy.OAuthHandler(
+            CONF["TWITTER_API_KEY"], CONF["TWITTER_API_SECRET_KEY"])
+        auth.set_access_token(
+            CONF["TWITTER_ACCESS_TOKEN"], CONF["TWITTER_ACCESS_SECRET_TOKEN"])
 
-CONF = obtain_config(DEVELOPMENT_MODE)
+        self.api = tweepy.API(auth)
 
-auth = tweepy.OAuthHandler(CONF["TWITTER_API_KEY"], CONF["TWITTER_API_SECRET_KEY"])
-auth.set_access_token(CONF["TWITTER_ACCESS_TOKEN"], CONF["TWITTER_ACCESS_SECRET_TOKEN"])
 
-api = tweepy.API(auth)
-
-def tweet(message: str):
+def tweet(message: str, client: TwitterAPIClient):
     try:
-        api.update_status(message)
+        client.api.update_status(message)
         print("Tweeted message:\t", message)
     except:
         print("Couldn't tweet message")

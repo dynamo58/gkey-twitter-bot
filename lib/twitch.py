@@ -1,8 +1,8 @@
-from typing import Union
+from typing import Union, Dict
 
 from requests import get  # type: ignore
 
-
+# gets the user-id from nickname of specified Twitch user
 def id_from_nick(id: str, token: str, nick: str) -> Union[str, None]:
     headers = {
         'Authorization': 'Bearer ' + token,
@@ -16,8 +16,8 @@ def id_from_nick(id: str, token: str, nick: str) -> Union[str, None]:
     except:
         return None
 
-
-def get_channel_info(id: str, token: str, twitch_id: int) -> Union[str, None]:
+# gets twitch channel information
+def get_channel_info(id: str, token: str, twitch_id: int) -> Union[Dict, None]:
     headers = {
         'Accept': 'application/vnd.twitchtv.v5+json',
         'Client-ID': id,

@@ -1,16 +1,15 @@
 from lib.twitch import id_from_nick, get_channel_info
-from lib.twitter import tweet
 
-
+import config as hard_config
 from typing import List, Optional, Dict
 from enum import Enum
 
-
-def obtain_config(dev_mode: bool) -> Dict[str, Optional[str]]:
+# -> config based on the environment/run mode
+def obtain_config() -> Dict[str, Optional[str]]:
     config: Dict[str, Optional[str]] = {}
 
-    if dev_mode:
-        from dotenv import dotenv_values
+    if hard_config.DEVELOPMENT_MODE:
+        from dotenv import dotenv_values  # type: ignore
 
         config = dotenv_values(".env")
     else:
@@ -23,14 +22,14 @@ def obtain_config(dev_mode: bool) -> Dict[str, Optional[str]]:
 
     return config
 
-
+# All of the tracked Events + tweet templates
 class Event(Enum):
-    went_live = "{} has just went live playing {} with title \"{}\""
-    went_offline = "{} has just went offline"
-    changed_title = "{} has just changed title to \"{}\""
-    changed_game = "{} has just started playing {}"
+    went_live = "{} just went live playing {} with title \"{}\""
+    went_offline = "{} has just gone offline"
+    changed_title = "{} just changed title to \"{}\""
+    changed_game = "{} just started playing {}"
 
-
+# Twitch streamer tracking instance
 class Streamer():
     def __init__(self):
         self.name = None
@@ -42,10 +41,11 @@ class Streamer():
     def __str__(self):
         return "\n{} <-> {}\nlive:\t{}\ngame:\t{}\ntitle:\t{}".format(self.name, self.id, self.is_live, self.game, self.title)
 
+    # create instance based on config
     def from_config(self, CONF):
         self.name = CONF["STREAMER"]
         id = id_from_nick(CONF["ID"], CONF["TOKEN"],
-                          CONF["STREAMER"])  # type: ignore
+                          CONF["STREAMER"])
 
         if id == None:
             raise Exception("User does not exist")
@@ -64,6 +64,7 @@ class Streamer():
 
         return self
 
+    # check if streamer is live and compare with previous data
     def check(self, CONF, twitter_client):
         pending_events: List[Event] = []
         info = get_channel_info(CONF["ID"], CONF["TOKEN"], self.id)
@@ -87,24 +88,23 @@ class Streamer():
 
         self.handle_event(pending_events, CONF, twitter_client)
 
-    def handle_event(self, event_stack: List[Event], CONF, client):
+    # go through the event stack and decide what/what not to tweet
+    def handle_event(self, event_stack: List[Event], CONF, twitter_client):
         if Event.went_live in event_stack:
-            tweet(Event.went_live.value.format(
-                self.name, self.game, self.title), client)
+            twitter_client.tweet(Event.went_live.value.format(
+                self.name, self.game, self.title))
             return
 
         if Event.went_offline in event_stack:
-            tweet(Event.went_offline.value.format(self.name), client)
+            twitter_client.tweet(Event.went_offline.value.format(self.name))
             return
 
         if Event.changed_game in event_stack:
-            tweet(Event.changed_game.value.format(
-                self.name, self.game), client)
+            twitter_client.tweet(Event.changed_game.value.format(
+                self.name, self.game))
             return
 
         if Event.changed_title in event_stack:
-            tweet(Event.changed_title.value.format(
-                self.name, self.title), client)
+            twitter_client.tweet(Event.changed_title.value.format(
+                self.name, self.title))
             return
-
-        print("Nothing here ZULUL")

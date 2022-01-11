@@ -10,12 +10,18 @@ Currently the bot will Tweet when
 
 # Running yourself
 
-- install the requirements va `pip install -r requiremenets.txt`
+- install the requirements va `pip install -r requirements.txt`
 - configure the `config.py` file
 
-Now you either supply the API keys, etc. via a env. file
+Setup via a .env file
 - rename `.env.example` to `.env`
-- populate `.env` with your own keys
+- populate `.env` with your own credentials
 - run with `python main.py --dev`
 
-The other way is to provide those via environmental variables - then you could just run it normally with `python main.py`
+Setup via environment variables
+- run `python main.py` with environment variables specified by the `.env.example` file (with appropriate values)
+
+All the possible CLI args are:
+- `--dev` - read credentials from a `.env file` (normally takes in environment variables)
+- `--verbose` - writes info to console
+- `--log` - logs info to a .logs file

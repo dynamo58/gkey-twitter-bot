@@ -1,12 +1,16 @@
 from lib.twitch import id_from_nick, get_channel_info
-
 import config as hard_config
-from typing import List, Optional, Dict
+
+from typing import List, Optional, Dict, Union, Any
 from enum import Enum
 
+from sys import argv
+from datetime import datetime as dt
+
+
 # -> config based on the environment/run mode
-def obtain_config() -> Dict[str, Optional[str]]:
-    config: Dict[str, Optional[str]] = {}
+def obtain_config() -> Dict[str, Any]:
+    config: Dict[str, Optional[Any]] = {}
 
     if hard_config.DEVELOPMENT_MODE:
         from dotenv import dotenv_values  # type: ignore
@@ -18,9 +22,33 @@ def obtain_config() -> Dict[str, Optional[str]]:
         for var in ["ID", "TOKEN", "TWITTER_API_KEY", "TWITTER_API_SECRET_KEY", "TWITTER_BEARER_TOKEN", "TWITTER_ACCESS_TOKEN", "TWITTER_ACCESS_SECRET_TOKEN"]:
             config[var] = environ[var]
 
-    config["STREAMER"] = "Gisthekey"
+    config["STREAMER"] = hard_config.STREAMER
+    config["PERIOD"] = hard_config.PERIOD
+    config["VERBOSE"] = hard_config.VERBOSE
+    config["LOGGING"] = hard_config.LOGGING
 
     return config
+
+# if config says so, report info
+def handleFeedback(CONF, type, feedback: Union[str, Exception]) -> None:
+    timestamp = dt.now().strftime("%d.%m.%y %H:%M:%S")
+    out = "[{}]\t{}{}".format(timestamp, type.name, feedback)
+
+    if CONF["LOGGING"]:
+        with open(".log", 'a') as log:
+            log.write("\n\n")
+            log.write(out)
+
+    if CONF["VERBOSE"]:
+        print(out)
+
+    pass
+
+# all the possible info that can be reported
+class Feedback(Enum):
+    Initialized = 1
+    Tweet = 2
+    Error = 3
 
 # All of the tracked Events + tweet templates
 class Event(Enum):
@@ -39,7 +67,7 @@ class Streamer():
         self.title = None
 
     def __str__(self):
-        return "\n{} <-> {}\nlive:\t{}\ngame:\t{}\ntitle:\t{}".format(self.name, self.id, self.is_live, self.game, self.title)
+        return "\n{} <-> {}\n\tlive:\t{}\n\tgame:\t{}\n\ttitle:\t{}".format(self.name, self.id, self.is_live, self.game, self.title)
 
     # create instance based on config
     def from_config(self, CONF):
@@ -60,7 +88,7 @@ class Streamer():
             self.game = info["game_name"]						# type: ignore
             self.title = info["title"]							# type: ignore
 
-        print("Initialized:\n", self)
+        handleFeedback(CONF, Feedback.Initialized, self)
 
         return self
 
@@ -91,20 +119,20 @@ class Streamer():
     # go through the event stack and decide what/what not to tweet
     def handle_event(self, event_stack: List[Event], CONF, twitter_client):
         if Event.went_live in event_stack:
-            twitter_client.tweet(Event.went_live.value.format(
+            twitter_client.tweet(CONF, Event.went_live.value.format(
                 self.name, self.game, self.title))
             return
 
         if Event.went_offline in event_stack:
-            twitter_client.tweet(Event.went_offline.value.format(self.name))
+            twitter_client.tweet(CONF, Event.went_offline.value.format(self.name))
             return
 
         if Event.changed_game in event_stack:
-            twitter_client.tweet(Event.changed_game.value.format(
+            twitter_client.tweet(CONF, Event.changed_game.value.format(
                 self.name, self.game))
             return
 
         if Event.changed_title in event_stack:
-            twitter_client.tweet(Event.changed_title.value.format(
+            twitter_client.tweet(CONF, Event.changed_title.value.format(
                 self.name, self.title))
             return

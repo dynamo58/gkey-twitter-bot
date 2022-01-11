@@ -1,4 +1,6 @@
+from lib.core import Feedback, handleFeedback
 import tweepy  # type: ignore
+
 
 # Twitter API client with a some meta
 class TwitterAPIClient:
@@ -12,7 +14,7 @@ class TwitterAPIClient:
         self.dummy = 1
 
     # tweets a message
-    def tweet(self, message: str):
+    def tweet(self, CONF, message: str):
         try:
             for i in range(self.dummy):
                 message += "⠀"
@@ -20,7 +22,6 @@ class TwitterAPIClient:
             self.dummy = (self.dummy + 1) % 5
 
             self.api.update_status(message)
-            print("Tweeted message: ", message)
-        except Exception as e:
-            print("Couldn't tweet:")
-            print(e)
+            handleFeedback(CONF, Feedback.Tweet, message)
+        except Exception as err:
+            handleFeedback(CONF, Feedback.Error, err)

@@ -1,3 +1,6 @@
+_.py
 .env
 .log
 *__pycache__
+bin
+*python3

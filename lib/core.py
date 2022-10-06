@@ -4,7 +4,7 @@ import config as hard_config
 from typing import List, Optional, Dict, Union, Any
 from enum import Enum
 
-from sys import argv
+from sys import argv, exit
 from datetime import datetime as dt
 
 def log(uptime: int, message: str) -> None:
@@ -87,6 +87,10 @@ class Streamer():
 		self.id = id
 		info = get_channel_info(CONF["ID"], CONF["TOKEN"], id)  # type: ignore
 
+		if info == "err":
+			print("Twitch API failed, do it again")
+			exit(0)
+
 		if info == None:
 			self.is_live = False
 		else:
@@ -102,6 +106,8 @@ class Streamer():
 	def check(self, CONF, twitter_client):
 		pending_events: List[Event] = []
 		info = get_channel_info(CONF["ID"], CONF["TOKEN"], self.id)
+
+		if info == "err": pass
 
 		if info == None and self.is_live:
 			pending_events.append(Event.went_offline)
